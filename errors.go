@@ -19,10 +19,10 @@ var ErrComponentNaN = func(component string, err error) error {
 // ErrKeyGeneration represents an error thrown when there was some kind of
 // error while generating a key.
 var ErrKeyGeneration = func(err error) error {
-	return fmt.Errorf("cannot derivate key: %w", err)
+	return fmt.Errorf("cannot derive key: %w", err)
 }
 
 // ErrCouldNotNeuter happens when neutering a key is not possible.
 var ErrCouldNotNeuter = func(err error) error {
-	return fmt.Errorf("could not derivate neutered public key: %w", err)
+	return fmt.Errorf("could not derive neutered public key: %w", err)
 }

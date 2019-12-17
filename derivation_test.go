@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_derivateFromMnemonic(t *testing.T) {
+func Test_deriveFromMnemonic(t *testing.T) {
 	type args struct {
 		hrp      string
 		mnemonic string
@@ -53,14 +53,14 @@ func Test_derivateFromMnemonic(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, gotAddress, err := derivateFromMnemonic(tt.args.hrp, tt.args.mnemonic, tt.args.path)
+			_, gotAddress, err := deriveFromMnemonic(tt.args.hrp, tt.args.mnemonic, tt.args.path)
 			tt.assertion(t, err)
 			assert.Equal(t, tt.wantAddress, gotAddress)
 		})
 	}
 }
 
-func Test_derivatePath(t *testing.T) {
+func Test_derivePath(t *testing.T) {
 	ane := reflect.ValueOf(assert.NoError)
 
 	type args struct {
@@ -103,7 +103,7 @@ func Test_derivatePath(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := derivatePath(tt.args.seed, tt.args.path)
+			got, err := derivePath(tt.args.seed, tt.args.path)
 			tt.assertion(t, err)
 
 			// if we're expecting assert.NoError, that means

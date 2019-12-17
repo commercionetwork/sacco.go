@@ -24,15 +24,15 @@ type derivationComponent struct {
 	Hardened bool
 }
 
-// derivateFromMnemonic derivates an HD keypair and address from a mnemonic, a path and an
+// deriveFromMnemonic derives an HD keypair and address from a mnemonic, a path and an
 // human-readable part.
-func derivateFromMnemonic(hrp, mnemonic, path string) (key *hdkeychain.ExtendedKey, address string, err error) {
+func deriveFromMnemonic(hrp, mnemonic, path string) (key *hdkeychain.ExtendedKey, address string, err error) {
 	if !bip39.IsMnemonicValid(mnemonic) {
 		return nil, "", fmt.Errorf("invalid mnemonic")
 	}
 
 	seed := bip39.NewSeed(mnemonic, "")
-	key, err = derivatePath(seed, path)
+	key, err = derivePath(seed, path)
 	if err != nil {
 		return nil, "", err
 	}
@@ -75,8 +75,8 @@ func addressFromPublicKey(pk *btcec.PublicKey, hrp string) (string, error) {
 	return addr, nil
 }
 
-// derivatePath derivates an HD keypair from a seed, and a derivation path.
-func derivatePath(seed []byte, path string) (*hdkeychain.ExtendedKey, error) {
+// derivePath derives an HD keypair from a seed, and a derivation path.
+func derivePath(seed []byte, path string) (*hdkeychain.ExtendedKey, error) {
 	params := chaincfg.MainNetParams
 	master, err := hdkeychain.NewMaster(seed, &params)
 	if err != nil {

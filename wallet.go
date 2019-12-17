@@ -28,7 +28,7 @@ type Wallet struct {
 // mnemonic and path.
 func FromMnemonic(hrp, mnemonic, path string) (*Wallet, error) {
 	var w Wallet
-	k, a, err := derivateFromMnemonic(hrp, mnemonic, path)
+	k, a, err := deriveFromMnemonic(hrp, mnemonic, path)
 	if err != nil {
 		return nil, err
 	}
