@@ -126,7 +126,7 @@ func Test_stringToComponents(t *testing.T) {
 		assertion assert.ErrorAssertionFunc
 	}{
 		{
-			"a well-formed derivation path with spaces inbetween characters",
+			"a well-formed derivation path with spaces between characters",
 			"m / 44' / 0' / 0' / 0 / 0 ",
 			[]derivationComponent{
 				{
@@ -153,7 +153,7 @@ func Test_stringToComponents(t *testing.T) {
 			assert.NoError,
 		},
 		{
-			"a well-formed derivation path without spaces inbetween characters",
+			"a well-formed derivation path without spaces between characters",
 			"m/44'/0'/0'/0/0",
 			[]derivationComponent{
 				{
