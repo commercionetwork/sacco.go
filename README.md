@@ -1,6 +1,6 @@
 # sacco.go [![Go Report Card](https://goreportcard.com/badge/github.com/commercionetwork/sacco.go)](https://goreportcard.com/report/github.com/commercionetwork/sacco.go)
 
-Golang implementation of Sacco, our cryptographic library that allows easy creation, signing and sending of Cosmos Network transactions
+Go implementation of Sacco, our cryptographic library that allows easy creation, signing and sending of Cosmos Network transactions
 
 ---
 
