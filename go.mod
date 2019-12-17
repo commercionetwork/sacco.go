@@ -1,4 +1,4 @@
-module github.com/commercionetwork/sacco-go
+module github.com/commercionetwork/sacco.go
 
 go 1.13
 
