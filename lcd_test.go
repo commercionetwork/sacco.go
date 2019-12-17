@@ -98,7 +98,9 @@ func Test_getNodeInfo(t *testing.T) {
 			`{"node_info":{"protocol_version":{"p2p":"7","block":"10","app":"0"},"id":"4bc6d5af186f705316620bffd5e2cefaea11bd59","listen_addr":"tcp://0.0.0.0:26656","network":"test-chain-jVvnJ6","version":"0.32.7","channels":"4020212223303800","moniker":"testchain","other":{"tx_index":"on","rpc_address":"tcp://127.0.0.1:26657"}},"application_version":{"name":"commercionetwork","server_name":"cnd","client_name":"cndcli","version":"1.3.3-9-gef69043","commit":"ef69043933adaefed4803c5032f27c8ab6280bbd","build_tags":"netgo","go":"go version go1.13.4 darwin/amd64"}}`,
 			http.StatusOK,
 			NodeInfo{
-				struct{Network string "json:\"network\""}{
+				struct {
+					Network string "json:\"network\""
+				}{
 					"test-chain-jVvnJ6",
 				},
 			},

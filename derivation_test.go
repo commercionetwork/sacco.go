@@ -129,23 +129,23 @@ func Test_stringToComponents(t *testing.T) {
 			"a well-formed derivation path with spaces inbetween characters",
 			"m / 44' / 0' / 0' / 0 / 0 ",
 			[]derivationComponent{
-				derivationComponent{
+				{
 					Path:     44,
 					Hardened: true,
 				},
-				derivationComponent{
+				{
 					Path:     0,
 					Hardened: true,
 				},
-				derivationComponent{
+				{
 					Path:     0,
 					Hardened: true,
 				},
-				derivationComponent{
+				{
 					Path:     0,
 					Hardened: false,
 				},
-				derivationComponent{
+				{
 					Path:     0,
 					Hardened: false,
 				},
@@ -156,23 +156,23 @@ func Test_stringToComponents(t *testing.T) {
 			"a well-formed derivation path without spaces inbetween characters",
 			"m/44'/0'/0'/0/0",
 			[]derivationComponent{
-				derivationComponent{
+				{
 					Path:     44,
 					Hardened: true,
 				},
-				derivationComponent{
+				{
 					Path:     0,
 					Hardened: true,
 				},
-				derivationComponent{
+				{
 					Path:     0,
 					Hardened: true,
 				},
-				derivationComponent{
+				{
 					Path:     0,
 					Hardened: false,
 				},
-				derivationComponent{
+				{
 					Path:     0,
 					Hardened: false,
 				},

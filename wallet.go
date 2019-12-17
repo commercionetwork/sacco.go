@@ -143,7 +143,7 @@ func (w Wallet) Sign(tx TransactionPayload, chainID, accountNumber, sequenceNumb
 	compressedPubKey := base64.StdEncoding.EncodeToString(pubKey.SerializeCompressed())
 
 	tx.Signatures = []Signature{
-		Signature{
+		{
 			Signature: signature,
 			SigPubKey: SigPubKey{
 				Type:  "tendermint/PubKeySecp256k1",

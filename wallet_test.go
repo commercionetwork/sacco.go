@@ -248,7 +248,7 @@ func TestWallet_Sign(t *testing.T) {
 				},
 				// this signature has been generated using a local chain with cncli
 				Signatures: []Signature{
-					Signature{
+					{
 						SigPubKey: SigPubKey{
 							Type:  "tendermint/PubKeySecp256k1",
 							Value: "A6WEhS1jR2qwULCuneR7miIMnzg/lFubu3IaPb0K4TVQ",
