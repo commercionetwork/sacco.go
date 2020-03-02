@@ -16,7 +16,6 @@ func getAccountData(lcdEndpoint, address string) (AccountData, error) {
 		return AccountData{}, err
 	}
 
-	var accountData AccountData
 	jdec := json.NewDecoder(resp.Body)
 
 	if resp.StatusCode != http.StatusOK {
@@ -30,9 +29,11 @@ func getAccountData(lcdEndpoint, address string) (AccountData, error) {
 		return AccountData{}, fmt.Errorf("error during get account data: %s", jsonError.Error)
 	}
 
-	err = jdec.Decode(&accountData)
-	if err != nil {
-		return AccountData{}, err
+	var accountData AccountData
+
+	errCdc := jdec.Decode(&accountData)
+	if errCdc != nil {
+		return AccountData{}, fmt.Errorf("could not unmarshal node response: %w", errCdc)
 	}
 
 	if accountData.Result.Value.Address == "" {

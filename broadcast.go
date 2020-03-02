@@ -7,7 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strings"
+	"strconv"
 )
 
 // TxMode identifies when an LCD should replies to a client
@@ -68,60 +68,18 @@ func broadcastTx(tx SignedTransactionPayload, lcdEndpoint string, txMode TxMode)
 	// deserialize LCD response into a cosmos TxResponse
 	var txr TxResponse
 
-	txrJdec := json.NewDecoder(resp.Body)
-	err = txrJdec.Decode(&txr)
+	jdec := json.NewDecoder(resp.Body)
+
+	err = jdec.Decode(&txr)
 	if err != nil {
 		return "", fmt.Errorf("could not deserialize cosmos txresponse from lcd: %w", err)
 	}
 
-	// something went wrong in tx validation on the LCD side,
-	// deserialize raw_log and return the error inside
-	allOk := true
-	for _, l := range txr.Logs {
-		allOk = allOk && l.Success
-	}
-
-	if !allOk || len(txr.Logs) <= 0 {
-		// txr.RawLog can either be a RawLog
-		// or it might be a lot of good stuff,
-		// we better cycle txr.Logs and build a nice error message
-		var jerr RawLog
-		jd := json.NewDecoder(strings.NewReader(txr.RawLog))
-		jsonErr := jd.Decode(&jerr)
-
-		if jsonErr == nil {
-			return "", fmt.Errorf(
-				"codespace %s: %s, code %d",
-				jerr.Codespace,
-				jerr.Message,
-				jerr.Code,
-			)
-		}
-
-		// parse logs!
-		message := ""
-		for i, log := range txr.Logs {
-			var jerr RawLog
-			jd := json.NewDecoder(strings.NewReader(log.Log))
-			jsonErr := jd.Decode(&jerr)
-
-			if jsonErr != nil {
-				// bail out
-				message = txr.RawLog
-				break
-			}
-
-			if i == 0 {
-				message = message + jerr.Message
-			} else {
-				message = message + ", " + jerr.Message
-			}
-		}
-
+	if txr.Code != 0 || len(txr.Logs) <= 0 {
 		return "", fmt.Errorf(
 			"codespace %s: %s, code %d",
 			txr.Codespace,
-			message,
+			txr.RawLog,
 			txr.Code,
 		)
 	}
@@ -147,8 +105,8 @@ func (w *Wallet) SignAndBroadcast(tx TransactionPayload, lcdEndpoint string, txM
 	signedTx, err := w.Sign(
 		tx,
 		nodeInfo.Info.Network,
-		accountData.Result.Value.AccountNumber,
-		accountData.Result.Value.Sequence,
+		strconv.FormatInt(accountData.Result.Value.AccountNumber, 10),
+		strconv.FormatInt(accountData.Result.Value.Sequence, 10),
 	)
 	if err != nil {
 		return "", fmt.Errorf("could not sign transaction: %w", err)

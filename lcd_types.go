@@ -27,8 +27,8 @@ type AccountDataResult struct {
 // REST endpoint.
 type AccountDataValue struct {
 	Address       string `json:"address"`
-	AccountNumber string `json:"account_number"`
-	Sequence      string `json:"sequence"`
+	AccountNumber int64  `json:"account_number"`
+	Sequence      int64  `json:"sequence"`
 }
 
 // NodeInfo is the LCD REST response to a /node_info request,
@@ -37,15 +37,6 @@ type NodeInfo struct {
 	Info struct {
 		Network string `json:"network"`
 	} `json:"node_info"`
-}
-
-// RawLog is the log format returned by the LCD REST service whenever a
-// transaction doesn't meet the quality of life properties specified in the
-// transaction type itself.
-type RawLog struct {
-	Codespace string `json:"codespace,omitempty"`
-	Code      int    `json:"code,omitempty"`
-	Message   string `json:"message,omitempty"`
 }
 
 // TxResponse represents whatever data the LCD REST service returns to atomicwallet
