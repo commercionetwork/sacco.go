@@ -75,7 +75,7 @@ func broadcastTx(tx SignedTransactionPayload, lcdEndpoint string, txMode TxMode)
 		return "", fmt.Errorf("could not deserialize cosmos txresponse from lcd: %w", err)
 	}
 
-	if txr.Code != 0 || len(txr.Logs) <= 0 {
+	if txr.Code != 0 || len(txr.Logs) > 0 {
 		return "", fmt.Errorf(
 			"codespace %s: %s, code %d",
 			txr.Codespace,
