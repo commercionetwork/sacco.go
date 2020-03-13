@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+
+	"github.com/cosmos/cosmos-sdk/codec"
 )
 
 // TxMode identifies when an LCD should replies to a client
@@ -39,7 +41,9 @@ func broadcastTx(tx SignedTransactionPayload, lcdEndpoint string, txMode TxMode)
 		Tx:   tx,
 		Mode: txMode.String(),
 	}
-	requestBody, err := json.Marshal(txBody)
+
+	cdc := codec.New()
+	requestBody, err := cdc.MarshalJSON(txBody)
 	if err != nil {
 		return "", err
 	}
