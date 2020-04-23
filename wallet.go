@@ -10,18 +10,23 @@ import (
 	"github.com/btcsuite/btcutil/hdkeychain"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/go-bip39"
+	"github.com/tendermint/go-amino"
+	"github.com/tendermint/tendermint/crypto"
+	"github.com/tendermint/tendermint/crypto/secp256k1"
+	"github.com/tendermint/tendermint/libs/bech32"
 )
 
 // Wallet is a facility used to manipulate private and public keys associated
 // to a BIP-32 mnemonic.
 type Wallet struct {
-	keyPair    *hdkeychain.ExtendedKey
-	publicKey  *hdkeychain.ExtendedKey
-	PublicKey  string `json:"public_key,omitempty"`
-	PrivateKey string `json:"private_key,omitempty"`
-	Path       string `json:"path,omitempty"`
-	HRP        string `json:"hrp,omitempty"`
-	Address    string `json:"address,omitempty"`
+	keyPair         *hdkeychain.ExtendedKey
+	publicKey       *hdkeychain.ExtendedKey
+	PublicKey       string `json:"public_key,omitempty"`
+	PublicKeyBech32 string `json:"public_key_bech_32,omitempty"`
+	PrivateKey      string `json:"private_key,omitempty"`
+	Path            string `json:"path,omitempty"`
+	HRP             string `json:"hrp,omitempty"`
+	Address         string `json:"address,omitempty"`
 }
 
 // FromMnemonic returns a new Wallet instance given a human-readable part,
@@ -46,7 +51,32 @@ func FromMnemonic(hrp, mnemonic, path string) (*Wallet, error) {
 	w.publicKey = pk
 	w.PublicKey = w.publicKey.String()
 
+	pkb32, err := w.bech32AminoPubKey()
+	if err != nil {
+		return nil, ErrCouldNotBech32(err)
+	}
+
+	w.PublicKeyBech32 = pkb32
+
 	return &w, nil
+}
+
+func (w Wallet) bech32AminoPubKey() (string, error) {
+	pkec, _ := w.publicKey.ECPubKey()
+
+	var cdc = amino.NewCodec()
+
+	cdc.RegisterInterface((*crypto.PubKey)(nil), nil)
+	cdc.RegisterConcrete(secp256k1.PubKeySecp256k1{},
+		"tendermint/PubKeySecp256k1", nil)
+
+	pubkTm := secp256k1.PubKeySecp256k1{}
+
+	for i, l := range pkec.SerializeCompressed() {
+		pubkTm[i] = l
+	}
+
+	return bech32.ConvertAndEncode(w.HRP+"pub", cdc.MustMarshalBinaryBare(pubkTm))
 }
 
 // Export creates a JSON representation of w.
