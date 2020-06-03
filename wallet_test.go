@@ -82,7 +82,7 @@ func TestWallet_Export(t *testing.T) {
 				mnemonic: "final random flame cinnamon grunt hazard easily mutual resist pond solution define knife female tongue crime atom jaguar alert library best forum lesson rigid",
 				path:     CosmosDerivationPath,
 			},
-			`{"public_key":"xpub6FW9dWDyi8m8todcGW5YDVbzoUx4rgBWZ7nsQ8tDyVyyv4yyc1mo9ca3cRhDHfr2V3xhcHj5GDrBMoHCBZti5LRz1XrsVxSKWrPYbQFssKo","path":"m/44'/118'/0'/0/0","hrp":"cosmos","address":"cosmos1huydeevpz37sd9snkgul6070mstupukw00xkw9"}`,
+			`{"public_key":"xpub6FW9dWDyi8m8todcGW5YDVbzoUx4rgBWZ7nsQ8tDyVyyv4yyc1mo9ca3cRhDHfr2V3xhcHj5GDrBMoHCBZti5LRz1XrsVxSKWrPYbQFssKo","public_key_bech_32":"cosmospub1addwnpepqd4ns87g34dhzaasjeuywu22y2ygmcy0n7kl65j96q5gzftx6zef27fcxur","path":"m/44'/118'/0'/0/0","hrp":"cosmos","address":"cosmos1huydeevpz37sd9snkgul6070mstupukw00xkw9"}`,
 			assert.NoError,
 		},
 		{
@@ -140,7 +140,7 @@ func TestWallet_ExportWithPrivateKey(t *testing.T) {
 				mnemonic: "final random flame cinnamon grunt hazard easily mutual resist pond solution define knife female tongue crime atom jaguar alert library best forum lesson rigid",
 				path:     CosmosDerivationPath,
 			},
-			`{"public_key":"xpub6FW9dWDyi8m8todcGW5YDVbzoUx4rgBWZ7nsQ8tDyVyyv4yyc1mo9ca3cRhDHfr2V3xhcHj5GDrBMoHCBZti5LRz1XrsVxSKWrPYbQFssKo","private_key":"xprvA2WoDzh5smCqgKZ9AUYXrMfGFT7aTDTfBtsGbkUcRAT13Geq4UTYbpFZm9BYmxMBtn4fK8LYndQ7HaneCLGwT35iW2VDmPKRdErwJHRkLgX","path":"m/44'/118'/0'/0/0","hrp":"cosmos","address":"cosmos1huydeevpz37sd9snkgul6070mstupukw00xkw9"}`,
+			`{"public_key":"xpub6FW9dWDyi8m8todcGW5YDVbzoUx4rgBWZ7nsQ8tDyVyyv4yyc1mo9ca3cRhDHfr2V3xhcHj5GDrBMoHCBZti5LRz1XrsVxSKWrPYbQFssKo","public_key_bech_32":"cosmospub1addwnpepqd4ns87g34dhzaasjeuywu22y2ygmcy0n7kl65j96q5gzftx6zef27fcxur","private_key":"xprvA2WoDzh5smCqgKZ9AUYXrMfGFT7aTDTfBtsGbkUcRAT13Geq4UTYbpFZm9BYmxMBtn4fK8LYndQ7HaneCLGwT35iW2VDmPKRdErwJHRkLgX","path":"m/44'/118'/0'/0/0","hrp":"cosmos","address":"cosmos1huydeevpz37sd9snkgul6070mstupukw00xkw9"}`,
 			assert.NoError,
 		},
 		{
