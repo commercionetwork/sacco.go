@@ -72,9 +72,7 @@ func (w Wallet) bech32AminoPubKey() (string, error) {
 
 	pubkTm := secp256k1.PubKeySecp256k1{}
 
-	for i, l := range pkec.SerializeCompressed() {
-		pubkTm[i] = l
-	}
+	copy(pubkTm[:], pkec.SerializeCompressed())
 
 	return bech32.ConvertAndEncode(w.HRP+"pub", cdc.MustMarshalBinaryBare(pubkTm))
 }
