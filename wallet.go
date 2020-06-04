@@ -3,22 +3,18 @@ package sacco
 import (
 	"crypto/sha256"
 	"encoding/base64"
-	"encoding/json"
-	"strings"
 
-	"github.com/awnumar/memguard"
 	"github.com/btcsuite/btcutil/hdkeychain"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/go-bip39"
-	"github.com/tendermint/go-amino"
-	"github.com/tendermint/tendermint/crypto"
-	"github.com/tendermint/tendermint/crypto/secp256k1"
-	"github.com/tendermint/tendermint/libs/bech32"
+
+	"github.com/commercionetwork/sacco.go/softwarewallet"
 )
 
 // Wallet is a facility used to manipulate private and public keys associated
 // to a BIP-32 mnemonic.
 type Wallet struct {
+	// TODO: just leave publicKey (extendedkey) and Address here,
+	// leave all the other fields as a CryptoProvider-dependent implementation.
 	keyPair         *hdkeychain.ExtendedKey
 	publicKey       *hdkeychain.ExtendedKey
 	PublicKey       string `json:"public_key,omitempty"`
@@ -28,6 +24,16 @@ type Wallet struct {
 	HRP             string `json:"hrp,omitempty"`
 	Address         string `json:"address,omitempty"`
 }
+
+// TODO: save a "cryptoprovider" instance here, defaulting to the software one.
+// A crypto provider must provide implementations for
+// - FromMnemonic
+// - Sign
+// - Bech32PublicKey
+// - Derive
+// Derive and FromMnemonic can be merged - each CryptoProvider can define a set of options.
+
+var DefaultProvider = softwarewallet.SoftwareWallet{}
 
 // FromMnemonic returns a new Wallet instance given a human-readable part,
 // mnemonic and path.
@@ -51,7 +57,12 @@ func FromMnemonic(hrp, mnemonic, path string) (*Wallet, error) {
 	w.publicKey = pk
 	w.PublicKey = w.publicKey.String()
 
-	pkb32, err := w.bech32AminoPubKey()
+	pkec, err := pk.ECPubKey()
+	if err != nil {
+		return nil, ErrCouldNotBech32(err)
+	}
+
+	pkb32, err := Bech32AminoPubKey(pkec.SerializeCompressed(), w.HRP)
 	if err != nil {
 		return nil, ErrCouldNotBech32(err)
 	}
@@ -59,57 +70,6 @@ func FromMnemonic(hrp, mnemonic, path string) (*Wallet, error) {
 	w.PublicKeyBech32 = pkb32
 
 	return &w, nil
-}
-
-func (w Wallet) bech32AminoPubKey() (string, error) {
-	pkec, _ := w.publicKey.ECPubKey()
-
-	var cdc = amino.NewCodec()
-
-	cdc.RegisterInterface((*crypto.PubKey)(nil), nil)
-	cdc.RegisterConcrete(secp256k1.PubKeySecp256k1{},
-		"tendermint/PubKeySecp256k1", nil)
-
-	pubkTm := secp256k1.PubKeySecp256k1{}
-
-	copy(pubkTm[:], pkec.SerializeCompressed())
-
-	return bech32.ConvertAndEncode(w.HRP+"pub", cdc.MustMarshalBinaryBare(pubkTm))
-}
-
-// Export creates a JSON representation of w.
-// Export does not include the private key in the JSON representation.
-func (w Wallet) Export() (string, error) {
-	w.PrivateKey = ""
-	data, err := json.Marshal(w)
-
-	return string(data), err
-}
-
-// ExportWithPrivateKey creates a JSON representation of w.
-// ExportWithPrivateKey includes the private key in the JSON representation.
-func (w Wallet) ExportWithPrivateKey() (string, error) {
-	w.PrivateKey = w.keyPair.String()
-
-	s := memguard.NewStream()
-
-	enc := json.NewEncoder(s)
-	err := enc.Encode(w)
-	if err != nil {
-		return "", err
-	}
-
-	enclave := s.Front().Value.(*memguard.Enclave)
-	data, err := enclave.Open()
-	if err != nil {
-		return "", err
-	}
-
-	data.Melt()
-
-	defer data.Destroy()
-
-	return strings.TrimSpace(string(data.Bytes())), err
 }
 
 // GenerateMnemonic generates a new random mnemonic sequence.
@@ -123,26 +83,11 @@ func GenerateMnemonic() (string, error) {
 	return mnemonic, err
 }
 
-// signBytes transforms a TransactionPayload with its chainID, accountNumber e sequenceNumber
-// in a sorted-by-fieldname JSON representation, ready to be signed.
-func signBytes(tx TransactionPayload, chainID, accountNumber, sequenceNumber string) []byte {
-	txs := TransactionSignature{
-		AccountNumber: accountNumber,
-		ChainID:       chainID,
-		Fee:           tx.Fee,
-		Sequence:      sequenceNumber,
-		Msgs:          tx.Message,
-		Memo:          tx.Memo,
-	}
-	txbytes, _ := json.Marshal(txs)
-	return sdk.MustSortJSON(txbytes)
-}
-
 // Sign signs tx with given chainID, accountNumber and sequenceNumber, with w's private key.
 // The resulting computation must be enclosed in a Transaction struct to be sent over the wire
 // to a Cosmos LCD.
 func (w Wallet) Sign(tx TransactionPayload, chainID, accountNumber, sequenceNumber string) (SignedTransactionPayload, error) {
-	signBytes := signBytes(tx, chainID, accountNumber, sequenceNumber)
+	signBytes := SignBytes(tx, chainID, accountNumber, sequenceNumber)
 
 	pk, err := w.keyPair.ECPrivKey()
 	if err != nil {
