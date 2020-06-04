@@ -3,119 +3,115 @@ package sacco
 import (
 	"crypto/sha256"
 	"encoding/base64"
-
-	"github.com/btcsuite/btcutil/hdkeychain"
-	"github.com/cosmos/go-bip39"
+	"fmt"
+	"strconv"
 
 	"github.com/commercionetwork/sacco.go/softwarewallet"
 )
 
-// Wallet is a facility used to manipulate private and public keys associated
-// to a BIP-32 mnemonic.
+// Wallet is a facility used to manipulate private and public keys, send transaction to LCD nodes.
 type Wallet struct {
-	// TODO: just leave publicKey (extendedkey) and Address here,
-	// leave all the other fields as a CryptoProvider-dependent implementation.
-	keyPair         *hdkeychain.ExtendedKey
-	publicKey       *hdkeychain.ExtendedKey
-	PublicKey       string `json:"public_key,omitempty"`
-	PublicKeyBech32 string `json:"public_key_bech_32,omitempty"`
-	PrivateKey      string `json:"private_key,omitempty"`
-	Path            string `json:"path,omitempty"`
-	HRP             string `json:"hrp,omitempty"`
-	Address         string `json:"address,omitempty"`
+	cp        CryptoProvider
+	Address   string
+	PublicKey string
 }
 
-// TODO: save a "cryptoprovider" instance here, defaulting to the software one.
-// A crypto provider must provide implementations for
-// - FromMnemonic
-// - Sign
-// - Bech32PublicKey
-// - Derive
-// Derive and FromMnemonic can be merged - each CryptoProvider can define a set of options.
-
-var DefaultProvider = softwarewallet.SoftwareWallet{}
-
-// FromMnemonic returns a new Wallet instance given a human-readable part,
-// mnemonic and path.
-func FromMnemonic(hrp, mnemonic, path string) (*Wallet, error) {
-	var w Wallet
-	k, a, err := deriveFromMnemonic(hrp, mnemonic, path)
+func NewWallet(p CryptoProvider) (*Wallet, error) {
+	address, err := p.Address()
 	if err != nil {
 		return nil, err
 	}
 
-	w.keyPair = k
-	w.Path = path
-	w.Address = a
-	w.HRP = hrp
-
-	pk, err := w.keyPair.Neuter()
+	pubKey, err := p.Bech32PublicKey()
 	if err != nil {
-		return nil, ErrCouldNotNeuter(err)
+		return nil, err
 	}
-
-	w.publicKey = pk
-	w.PublicKey = w.publicKey.String()
-
-	pkec, err := pk.ECPubKey()
-	if err != nil {
-		return nil, ErrCouldNotBech32(err)
-	}
-
-	pkb32, err := Bech32AminoPubKey(pkec.SerializeCompressed(), w.HRP)
-	if err != nil {
-		return nil, ErrCouldNotBech32(err)
-	}
-
-	w.PublicKeyBech32 = pkb32
-
-	return &w, nil
+	return &Wallet{
+		cp:        p,
+		Address:   string(address),
+		PublicKey: pubKey,
+	}, nil
 }
 
-// GenerateMnemonic generates a new random mnemonic sequence.
-func GenerateMnemonic() (string, error) {
-	sb, err := hdkeychain.GenerateSeed(hdkeychain.RecommendedSeedLen)
+func NewSoftwareWallet(hrp, mnemonic, path string) (*Wallet, error) {
+	sw, err := softwarewallet.Derive(softwarewallet.DeriveOptions{
+		HRP:      hrp,
+		Mnemonic: mnemonic,
+		Path:     path,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return NewWallet(sw)
+}
+
+// SignAndBroadcast signs tx and broadcast it to the LCD specified by lcdEndpoint.
+func (w Wallet) SignAndBroadcast(tx TransactionPayload, lcdEndpoint string, txMode TxMode) (string, error) {
+	// get network (chain) name
+	nodeInfo, err := getNodeInfo(lcdEndpoint)
+	if err != nil {
+		return "", fmt.Errorf("could not get LCD node informations: %w", err)
+	}
+
+	addressBytes, err := w.cp.Address()
 	if err != nil {
 		return "", err
 	}
-	mnemonic, err := bip39.NewMnemonic(sb)
 
-	return mnemonic, err
+	address := string(addressBytes)
+
+	// get account sequence and account number
+	accountData, err := getAccountData(lcdEndpoint, address)
+	if err != nil {
+		return "", fmt.Errorf("could not get Account informations for address %s: %w", address, err)
+	}
+
+	// sign transaction
+	signedTx, err := w.Sign(
+		SignData{
+			tx,
+			nodeInfo.Info.Network,
+			strconv.FormatInt(accountData.Result.Value.AccountNumber, 10),
+			strconv.FormatInt(accountData.Result.Value.Sequence, 10),
+		},
+	)
+	if err != nil {
+		return "", fmt.Errorf("could not sign transaction: %w", err)
+	}
+
+	// broadcast transaction to the LCD
+	txHash, err := broadcastTx(signedTx, lcdEndpoint, txMode)
+	if err != nil {
+		return "", fmt.Errorf("could not broadcast transaction to the Cosmos network: %w", err)
+	}
+
+	// return transaction hash!
+	return txHash, nil
 }
 
-// Sign signs tx with given chainID, accountNumber and sequenceNumber, with w's private key.
-// The resulting computation must be enclosed in a Transaction struct to be sent over the wire
-// to a Cosmos LCD.
-func (w Wallet) Sign(tx TransactionPayload, chainID, accountNumber, sequenceNumber string) (SignedTransactionPayload, error) {
-	signBytes := SignBytes(tx, chainID, accountNumber, sequenceNumber)
-
-	pk, err := w.keyPair.ECPrivKey()
-	if err != nil {
-		return SignedTransactionPayload{}, err
-	}
+func (w Wallet) Sign(sd SignData) (SignedTransactionPayload, error) {
+	signBytes := SignBytes(sd.Tx, sd.ChainID, sd.AccountNumber, sd.SequenceNumber)
 
 	hashSb := sha256.Sum256(signBytes)
-	signatureRaw, err := pk.Sign(hashSb[:])
-	if err != nil {
-		return SignedTransactionPayload{}, err
-	}
-
-	signatureRaw.Serialize()
-	rBytes := signatureRaw.R.Bytes()
-	sBytes := signatureRaw.S.Bytes()
-
-	pubKey, err := w.publicKey.ECPubKey()
+	signatureRaw, err := w.cp.SignBlob(hashSb[:])
 	if err != nil {
 		return SignedTransactionPayload{}, err
 	}
 
 	r := []byte{}
-	r = append(r, rBytes...)
-	r = append(r, sBytes...)
+	r = append(r, signatureRaw.R...)
+	r = append(r, signatureRaw.S...)
 	signature := base64.StdEncoding.EncodeToString(r)
-	compressedPubKey := base64.StdEncoding.EncodeToString(pubKey.SerializeCompressed())
 
-	tx.Signatures = []Signature{
+	pubKey, err := w.cp.PublicKey()
+	if err != nil {
+		return SignedTransactionPayload{}, err
+	}
+	compressedPubKey := base64.StdEncoding.EncodeToString(pubKey)
+
+	sd.Tx.Signatures = []Signature{
 		{
 			Signature: signature,
 			SigPubKey: SigPubKey{
@@ -125,5 +121,6 @@ func (w Wallet) Sign(tx TransactionPayload, chainID, accountNumber, sequenceNumb
 		},
 	}
 
-	return SignedTransactionPayload(tx), nil
+	return SignedTransactionPayload(sd.Tx), nil
+
 }

@@ -1,4 +1,4 @@
-package sacco
+package softwarewallet
 
 import (
 	"crypto/sha256"
@@ -15,6 +15,8 @@ import (
 	// TODO: search for a modern, better implementation of ripemd160
 	// nolint:staticcheck
 	"golang.org/x/crypto/ripemd160"
+
+	"github.com/commercionetwork/sacco.go"
 )
 
 // derivationComponent holds informations about a single derivation
@@ -80,7 +82,7 @@ func derivePath(seed []byte, path string) (*hdkeychain.ExtendedKey, error) {
 	params := chaincfg.MainNetParams
 	master, err := hdkeychain.NewMaster(seed, &params)
 	if err != nil {
-		return nil, ErrKeyGeneration(err)
+		return nil, sacco.ErrKeyGeneration(err)
 	}
 
 	components, err := stringToComponents(path)
@@ -106,7 +108,7 @@ func derivePath(seed []byte, path string) (*hdkeychain.ExtendedKey, error) {
 		}
 
 		if err != nil {
-			return nil, ErrKeyGeneration(err)
+			return nil, sacco.ErrKeyGeneration(err)
 		}
 	}
 
@@ -120,11 +122,11 @@ func stringToComponents(path string) ([]derivationComponent, error) {
 
 	components := strings.Split(path, "/")
 	if len(components) <= 1 {
-		return []derivationComponent{}, ErrDerivationPathShort
+		return []derivationComponent{}, sacco.ErrDerivationPathShort
 	}
 
 	if components[0] != "m" {
-		return []derivationComponent{}, ErrDerivationPathFirstCharNotM
+		return []derivationComponent{}, sacco.ErrDerivationPathFirstCharNotM
 	}
 
 	// ignore the "m", we don't need that
@@ -139,7 +141,7 @@ func stringToComponents(path string) ([]derivationComponent, error) {
 		pathNum, convErr := strconv.ParseUint(rawPathNum, 10, 32)
 
 		if convErr != nil || rawPathNum == "" {
-			return []derivationComponent{}, ErrComponentNaN(rawPathNum, convErr)
+			return []derivationComponent{}, sacco.ErrComponentNaN(rawPathNum, convErr)
 		}
 
 		dcs[index] = derivationComponent{

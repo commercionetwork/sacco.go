@@ -29,8 +29,8 @@ func SignBytes(tx TransactionPayload, chainID, accountNumber, sequenceNumber str
 func Bech32AminoPubKey(pkBytes []byte, hrp string) (string, error) {
 	var cdc = amino.NewCodec()
 
-	if len(pkBytes) != 32 {
-		return "", fmt.Errorf("argument length is %d bytes, must be 32 bytes", len(pkBytes))
+	if len(pkBytes) != 33 {
+		return "", fmt.Errorf("argument length is %d bytes, must be 33 bytes", len(pkBytes))
 	}
 
 	cdc.RegisterInterface((*crypto.PubKey)(nil), nil)

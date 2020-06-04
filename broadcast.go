@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 )
@@ -89,39 +88,4 @@ func broadcastTx(tx SignedTransactionPayload, lcdEndpoint string, txMode TxMode)
 	}
 
 	return txr.TxHash, nil
-}
-
-// SignAndBroadcast signs tx and broadcast it to the LCD specified by lcdEndpoint.
-func (w *Wallet) SignAndBroadcast(tx TransactionPayload, lcdEndpoint string, txMode TxMode) (string, error) {
-	// get network (chain) name
-	nodeInfo, err := getNodeInfo(lcdEndpoint)
-	if err != nil {
-		return "", fmt.Errorf("could not get LCD node informations: %w", err)
-	}
-
-	// get account sequence and account number
-	accountData, err := getAccountData(lcdEndpoint, w.Address)
-	if err != nil {
-		return "", fmt.Errorf("could not get Account informations for address %s: %w", w.Address, err)
-	}
-
-	// sign transaction
-	signedTx, err := w.Sign(
-		tx,
-		nodeInfo.Info.Network,
-		strconv.FormatInt(accountData.Result.Value.AccountNumber, 10),
-		strconv.FormatInt(accountData.Result.Value.Sequence, 10),
-	)
-	if err != nil {
-		return "", fmt.Errorf("could not sign transaction: %w", err)
-	}
-
-	// broadcast transaction to the LCD
-	txHash, err := broadcastTx(signedTx, lcdEndpoint, txMode)
-	if err != nil {
-		return "", fmt.Errorf("could not broadcast transaction to the Cosmos network: %w", err)
-	}
-
-	// return transaction hash!
-	return txHash, nil
 }

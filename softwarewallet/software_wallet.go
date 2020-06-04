@@ -1,76 +1,106 @@
 package softwarewallet
 
 import (
-	"crypto/sha256"
-	"encoding/base64"
-
 	"github.com/btcsuite/btcutil/hdkeychain"
+	"github.com/cosmos/go-bip39"
 
 	"github.com/commercionetwork/sacco.go"
 )
 
+// SoftwareWallet is a CryptoProvider-compliant facility that implements a software-based Cosmos wallet.
 type SoftwareWallet struct {
-	keyPair         *hdkeychain.ExtendedKey
-	publicKey       *hdkeychain.ExtendedKey
-	PublicKey       string `json:"public_key,omitempty"`
-	PublicKeyBech32 string `json:"public_key_bech_32,omitempty"`
-	PrivateKey      string `json:"private_key,omitempty"`
-	Path            string `json:"path,omitempty"`
-	HRP             string `json:"hrp,omitempty"`
-	Address         string `json:"address,omitempty"`
+	keyPair   *hdkeychain.ExtendedKey
+	publicKey *hdkeychain.ExtendedKey
+	path      string
+	hrp       string
+	address   string
 }
 
-func (sw SoftwareWallet) Sign(sd sacco.SignData) (sacco.SignedTransactionPayload, error) {
-	signBytes := sacco.SignBytes(sd.Tx, sd.ChainID, sd.AccountNumber, sd.SequenceNumber)
-
-	pk, err := sw.keyPair.ECPrivKey()
-	if err != nil {
-		return sacco.SignedTransactionPayload{}, err
-	}
-
-	hashSb := sha256.Sum256(signBytes)
-	signatureRaw, err := pk.Sign(hashSb[:])
-	if err != nil {
-		return sacco.SignedTransactionPayload{}, err
-	}
-
-	signatureRaw.Serialize()
-	rBytes := signatureRaw.R.Bytes()
-	sBytes := signatureRaw.S.Bytes()
-
-	pubKey, err := sw.publicKey.ECPubKey()
-	if err != nil {
-		return sacco.SignedTransactionPayload{}, err
-	}
-
-	r := []byte{}
-	r = append(r, rBytes...)
-	r = append(r, sBytes...)
-	signature := base64.StdEncoding.EncodeToString(r)
-	compressedPubKey := base64.StdEncoding.EncodeToString(pubKey.SerializeCompressed())
-
-	sd.Tx.Signatures = []sacco.Signature{
-		{
-			Signature: signature,
-			SigPubKey: sacco.SigPubKey{
-				Type:  "tendermint/PubKeySecp256k1",
-				Value: compressedPubKey,
-			},
-		},
-	}
-
-	return sacco.SignedTransactionPayload(sd.Tx), nil
+type DeriveOptions struct {
+	Path     string
+	HRP      string
+	Mnemonic string
 }
 
-func (SoftwareWallet) Derive(options interface{}) (string, error) {
-	panic("implement me")
+// Derive derives a SoftwareWallet instance with with given DeriveOptions.
+// If DeriveOptions.Mnemonic is empty, a new mnemonic will be generated and used.
+func Derive(opts DeriveOptions) (*SoftwareWallet, error) {
+	if opts.Mnemonic == "" {
+		var err error
+		opts.Mnemonic, err = generateMnemonic()
+		if err != nil {
+			return nil, sacco.ErrCouldNotDerive(err)
+		}
+	}
+
+	var w SoftwareWallet
+	k, a, err := deriveFromMnemonic(opts.HRP, opts.Mnemonic, opts.Path)
+	if err != nil {
+		return nil, err
+	}
+
+	w.keyPair = k
+	w.path = opts.Path
+	w.address = a
+	w.hrp = opts.HRP
+
+	pk, err := w.keyPair.Neuter()
+	if err != nil {
+		return nil, sacco.ErrCouldNotNeuter(err)
+	}
+
+	w.publicKey = pk
+
+	return &w, nil
 }
 
-func (sw SoftwareWallet) Bech32PublicKey() (string, error) {
+// generateMnemonic generates a new random mnemonic sequence.
+func generateMnemonic() (string, error) {
+	sb, err := hdkeychain.GenerateSeed(hdkeychain.RecommendedSeedLen)
+	if err != nil {
+		return "", err
+	}
+	mnemonic, err := bip39.NewMnemonic(sb)
+
+	return mnemonic, err
+}
+
+func (sw SoftwareWallet) PublicKey() ([]byte, error) {
 	pkec, err := sw.publicKey.ECPubKey()
 	if err != nil {
-		return "", sacco.ErrCouldNotBech32(err)
+		return nil, sacco.ErrCouldNotBech32(err)
 	}
 
-	return sacco.Bech32AminoPubKey(pkec.SerializeCompressed(), sw.HRP)
+	return pkec.SerializeCompressed(), nil
+}
+
+func (sw SoftwareWallet) Address() ([]byte, error) {
+	return []byte(sw.address), nil
+}
+
+// SignBlob implements CryptoProvider interface on SoftwareWallet.
+func (sw SoftwareWallet) SignBlob(b []byte) (sacco.ProviderSignature, error) {
+	pk, err := sw.keyPair.ECPrivKey()
+	if err != nil {
+		return sacco.ProviderSignature{}, err
+	}
+	signatureRaw, err := pk.Sign(b)
+	if err != nil {
+		return sacco.ProviderSignature{}, err
+	}
+
+	return sacco.ProviderSignature{
+		R: signatureRaw.R.Bytes(),
+		S: signatureRaw.S.Bytes(),
+	}, nil
+}
+
+// Bech32PublicKey implements CryptoProvider interface on SoftwareWallet.
+func (sw SoftwareWallet) Bech32PublicKey() (string, error) {
+	pk, err := sw.PublicKey()
+	if err != nil {
+		return "", err
+	}
+
+	return sacco.Bech32AminoPubKey(pk, sw.hrp)
 }

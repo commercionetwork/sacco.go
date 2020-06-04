@@ -1,4 +1,4 @@
-package sacco
+package softwarewallet
 
 import (
 	"reflect"
@@ -6,6 +6,8 @@ import (
 
 	"github.com/cosmos/go-bip39"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/commercionetwork/sacco.go"
 )
 
 func Test_deriveFromMnemonic(t *testing.T) {
@@ -25,7 +27,7 @@ func Test_deriveFromMnemonic(t *testing.T) {
 			args{
 				hrp:      "cosmos",
 				mnemonic: "final random flame cinnamon grunt hazard easily mutual resist pond solution define knife female tongue crime atom jaguar alert library best forum lesson rigid",
-				path:     CosmosDerivationPath,
+				path:     sacco.CosmosDerivationPath,
 			},
 			"cosmos1huydeevpz37sd9snkgul6070mstupukw00xkw9",
 			assert.NoError,
@@ -35,7 +37,7 @@ func Test_deriveFromMnemonic(t *testing.T) {
 			args{
 				hrp:      "cosmos",
 				mnemonic: "no",
-				path:     CosmosDerivationPath,
+				path:     sacco.CosmosDerivationPath,
 			},
 			"",
 			assert.Error,
@@ -45,7 +47,7 @@ func Test_deriveFromMnemonic(t *testing.T) {
 			args{
 				hrp:      "cosmos",
 				mnemonic: "",
-				path:     CosmosDerivationPath,
+				path:     sacco.CosmosDerivationPath,
 			},
 			"",
 			assert.Error,
@@ -77,7 +79,7 @@ func Test_derivePath(t *testing.T) {
 			"empty seed",
 			args{
 				seed: []byte{},
-				path: CosmosDerivationPath,
+				path: sacco.CosmosDerivationPath,
 			},
 			"",
 			assert.Error,
@@ -86,7 +88,7 @@ func Test_derivePath(t *testing.T) {
 			"invalid derivation path",
 			args{
 				seed: bip39.NewSeed("seed", ""),
-				path: CosmosDerivationPath + "wrong",
+				path: sacco.CosmosDerivationPath + "wrong",
 			},
 			"",
 			assert.Error,
@@ -95,7 +97,7 @@ func Test_derivePath(t *testing.T) {
 			"valid seed, derivation ok",
 			args{
 				seed: bip39.NewSeed("seed", ""),
-				path: CosmosDerivationPath,
+				path: sacco.CosmosDerivationPath,
 			},
 			"xprvA3bZykkgQzVPPkaBMmXtVHAfj5fKojZSSyS38EuUQP1Ks78Q1gSbuaViTAWH12q7D5YRfG4qpd1DSRN3RuDtxZgzpLYxi36prgdiUVLECzW",
 			assert.NoError,

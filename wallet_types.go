@@ -11,7 +11,7 @@ type TransactionPayload struct {
 }
 
 // SignedTransactionPayload is a TransactionPayload which has been signed
-// by wallet.Sign().
+// by wallet.SignBlob().
 type SignedTransactionPayload TransactionPayload
 
 // TransactionSignature is a Transaction with AccountNumber, ChainID (Network) and

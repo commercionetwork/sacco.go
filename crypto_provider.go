@@ -7,8 +7,14 @@ type SignData struct {
 	SequenceNumber string
 }
 
+type ProviderSignature struct {
+	R []byte
+	S []byte
+}
+
 type CryptoProvider interface {
-	Sign(sd SignData) (SignedTransactionPayload, error)
-	Derive(options interface{}) (string, error)
+	SignBlob([]byte) (ProviderSignature, error)
+	PublicKey() ([]byte, error)
+	Address() ([]byte, error)
 	Bech32PublicKey() (string, error)
 }

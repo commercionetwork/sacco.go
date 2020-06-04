@@ -31,3 +31,7 @@ var ErrCouldNotNeuter = func(err error) error {
 var ErrCouldNotBech32 = func(err error) error {
 	return fmt.Errorf("could not convert public key to bech32: %w", err)
 }
+
+var ErrCouldNotDerive = func(err error) error {
+	return fmt.Errorf("could not derive mnemonic: %w", err)
+}
