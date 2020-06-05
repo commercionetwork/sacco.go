@@ -5,8 +5,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"strconv"
-
-	"github.com/commercionetwork/sacco.go/softwarewallet"
 )
 
 // Wallet is a facility used to manipulate private and public keys, send transaction to LCD nodes.
@@ -31,20 +29,6 @@ func NewWallet(p CryptoProvider) (*Wallet, error) {
 		Address:   string(address),
 		PublicKey: pubKey,
 	}, nil
-}
-
-func NewSoftwareWallet(hrp, mnemonic, path string) (*Wallet, error) {
-	sw, err := softwarewallet.Derive(softwarewallet.DeriveOptions{
-		HRP:      hrp,
-		Mnemonic: mnemonic,
-		Path:     path,
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	return NewWallet(sw)
 }
 
 // SignAndBroadcast signs tx and broadcast it to the LCD specified by lcdEndpoint.

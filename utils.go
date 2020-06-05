@@ -2,7 +2,9 @@ package sacco
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"strings"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/tendermint/go-amino"
@@ -31,6 +33,10 @@ func Bech32AminoPubKey(pkBytes []byte, hrp string) (string, error) {
 
 	if len(pkBytes) != 33 {
 		return "", fmt.Errorf("argument length is %d bytes, must be 33 bytes", len(pkBytes))
+	}
+
+	if strings.TrimSpace(hrp) == "" {
+		return "", errors.New("hrp is empty")
 	}
 
 	cdc.RegisterInterface((*crypto.PubKey)(nil), nil)

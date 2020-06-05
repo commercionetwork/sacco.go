@@ -1,6 +1,8 @@
 package softwarewallet
 
 import (
+	"errors"
+
 	"github.com/btcsuite/btcutil/hdkeychain"
 	"github.com/cosmos/go-bip39"
 
@@ -31,6 +33,10 @@ func Derive(opts DeriveOptions) (*SoftwareWallet, error) {
 		if err != nil {
 			return nil, sacco.ErrCouldNotDerive(err)
 		}
+	}
+
+	if opts.HRP == "" {
+		return nil, errors.New("hrp cannot be empty")
 	}
 
 	var w SoftwareWallet
