@@ -48,6 +48,7 @@ func broadcastTx(tx SignedTransactionPayload, lcdEndpoint string, txMode TxMode)
 	}
 
 	// send tx to lcdEndpoint
+	// nolint:gosec
 	resp, err := http.Post(endpoint, "application/json", bytes.NewBuffer(requestBody))
 	if err != nil {
 		return "", err

@@ -109,35 +109,35 @@ type errorCProv struct {
 	bech32Fails   bool
 }
 
-func (e errorCProv) SignBlob(bytes []byte) (sacco.ProviderSignature, error) {
+func (e errorCProv) SignBlob(_ []byte) (sacco.ProviderSignature, error) {
 	if !e.signBlobFails {
 		return sacco.ProviderSignature{
 			R: []byte{42},
 			S: []byte{42},
 		}, nil
 	}
-	return sacco.ProviderSignature{}, errors.New("error!")
+	return sacco.ProviderSignature{}, errors.New("error")
 }
 
 func (e errorCProv) PublicKey() ([]byte, error) {
 	if !e.pubkeyFails {
 		return []byte{42}, nil
 	}
-	return nil, errors.New("error!")
+	return nil, errors.New("error")
 }
 
 func (e errorCProv) Address() ([]byte, error) {
 	if !e.addressFails {
 		return []byte{42}, nil
 	}
-	return nil, errors.New("error!")
+	return nil, errors.New("error")
 }
 
 func (e errorCProv) Bech32PublicKey() (string, error) {
 	if !e.bech32Fails {
 		return "42", nil
 	}
-	return "", errors.New("error!")
+	return "", errors.New("error")
 }
 
 func TestNewWallet(t *testing.T) {
@@ -179,6 +179,7 @@ func TestNewWallet(t *testing.T) {
 				return
 			}
 
+			require.NotNil(t, res)
 			require.Equal(t, tt.want.Address, res.Address)
 			require.Equal(t, tt.want.PublicKey, res.PublicKey)
 			require.NoError(t, err)

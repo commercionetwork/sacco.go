@@ -23,7 +23,6 @@ func workingSW(t *testing.T) *softwarewallet.SoftwareWallet {
 }
 
 func TestDerive(t *testing.T) {
-
 	tests := []struct {
 		name    string
 		opts    softwarewallet.DeriveOptions

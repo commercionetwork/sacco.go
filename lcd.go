@@ -11,6 +11,7 @@ import (
 func getAccountData(lcdEndpoint, address string) (AccountData, error) {
 	endpoint := fmt.Sprintf("%s/auth/accounts/%s", lcdEndpoint, address)
 
+	// nolint:gosec
 	resp, err := http.Get(endpoint)
 	if err != nil {
 		return AccountData{}, err
@@ -47,6 +48,8 @@ func getAccountData(lcdEndpoint, address string) (AccountData, error) {
 // (chain) name.
 func getNodeInfo(lcdEndpoint string) (NodeInfo, error) {
 	endpoint := fmt.Sprintf("%s/node_info", lcdEndpoint)
+
+	// nolint:gosec
 	resp, err := http.Get(endpoint)
 	if err != nil {
 		return NodeInfo{}, err

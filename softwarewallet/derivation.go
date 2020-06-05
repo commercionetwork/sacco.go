@@ -12,7 +12,6 @@ import (
 	"github.com/btcsuite/btcutil/hdkeychain"
 	"github.com/cosmos/go-bip39"
 
-	// TODO: search for a modern, better implementation of ripemd160
 	// nolint:staticcheck
 	"golang.org/x/crypto/ripemd160"
 
@@ -159,7 +158,7 @@ func stringToComponents(path string) ([]derivationComponent, error) {
 // hardened indicator (the "'"), otherwise destStr will be equal to
 // s.
 func hardened(s string) (isHardened bool, destStr string) {
-	if len(s) <= 0 {
+	if len(s) == 0 {
 		return false, ""
 	}
 
@@ -167,7 +166,7 @@ func hardened(s string) (isHardened bool, destStr string) {
 	destStr = s
 
 	if isHardened {
-		destStr = string(s[:len(s)-1])
+		destStr = s[:len(s)-1]
 	}
 
 	return

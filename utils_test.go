@@ -1,9 +1,11 @@
-package sacco
+package sacco_test
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+
+	"github.com/commercionetwork/sacco.go"
 )
 
 func TestBech32AminoPubKey(t *testing.T) {
@@ -38,7 +40,7 @@ func TestBech32AminoPubKey(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			res, err := Bech32AminoPubKey(tt.data, tt.hrp)
+			res, err := sacco.Bech32AminoPubKey(tt.data, tt.hrp)
 
 			if tt.wantErr {
 				require.Error(t, err)
@@ -54,7 +56,7 @@ func TestBech32AminoPubKey(t *testing.T) {
 
 func TestSignBytes(t *testing.T) {
 	type args struct {
-		tx             TransactionPayload
+		tx             sacco.TransactionPayload
 		chainID        string
 		accountNumber  string
 		sequenceNumber string
@@ -67,7 +69,7 @@ func TestSignBytes(t *testing.T) {
 		{
 			"SignBytes creates the payload as instructed",
 			args{
-				tx:             TransactionPayload{},
+				tx:             sacco.TransactionPayload{},
 				chainID:        "1",
 				accountNumber:  "2",
 				sequenceNumber: "3",
@@ -77,7 +79,7 @@ func TestSignBytes(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			require.Equal(t, tt.want, SignBytes(
+			require.Equal(t, tt.want, sacco.SignBytes(
 				tt.args.tx,
 				tt.args.chainID,
 				tt.args.accountNumber,

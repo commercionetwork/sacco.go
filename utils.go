@@ -13,6 +13,8 @@ import (
 	"github.com/tendermint/tendermint/libs/bech32"
 )
 
+const ecPubKeyLen = 33
+
 // SignBytes transforms a TransactionPayload with its chainID, accountNumber e sequenceNumber
 // in a sorted-by-fieldname JSON representation, ready to be signed.
 func SignBytes(tx TransactionPayload, chainID, accountNumber, sequenceNumber string) []byte {
@@ -31,7 +33,7 @@ func SignBytes(tx TransactionPayload, chainID, accountNumber, sequenceNumber str
 func Bech32AminoPubKey(pkBytes []byte, hrp string) (string, error) {
 	var cdc = amino.NewCodec()
 
-	if len(pkBytes) != 33 {
+	if len(pkBytes) != ecPubKeyLen {
 		return "", fmt.Errorf("argument length is %d bytes, must be 33 bytes", len(pkBytes))
 	}
 

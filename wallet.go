@@ -106,5 +106,4 @@ func (w Wallet) Sign(sd SignData) (SignedTransactionPayload, error) {
 	}
 
 	return SignedTransactionPayload(sd.Tx), nil
-
 }

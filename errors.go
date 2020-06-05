@@ -27,11 +27,12 @@ var ErrCouldNotNeuter = func(err error) error {
 	return fmt.Errorf("could not derive neutered public key: %w", err)
 }
 
-// ErrCouldNotNeuter happens when converting a public key to bech32 is impossible.
+// ErrCouldNotBech32 happens when converting a public key to bech32 is impossible.
 var ErrCouldNotBech32 = func(err error) error {
 	return fmt.Errorf("could not convert public key to bech32: %w", err)
 }
 
+// ErrCouldNotDerive happens when it is not possible to derive a wallet from a given CryptoProvider.
 var ErrCouldNotDerive = func(err error) error {
 	return fmt.Errorf("could not derive mnemonic: %w", err)
 }
