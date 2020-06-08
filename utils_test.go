@@ -88,3 +88,49 @@ func TestSignBytes(t *testing.T) {
 		})
 	}
 }
+
+func TestBech32Address(t *testing.T) {
+	tests := []struct {
+		name    string
+		hrp     string
+		data    []byte
+		want    []byte
+		wantErr bool
+	}{
+		{
+			"argument length is not 33",
+			"",
+			[]byte{1, 2},
+			nil,
+			true,
+		},
+		{
+			"hrp empty",
+			"",
+			[]byte{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32},
+			nil,
+			true,
+		},
+		{
+			"all ok",
+			"did:com:",
+			[]byte{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32},
+			[]byte{0x64, 0x69, 0x64, 0x3a, 0x63, 0x6f, 0x6d, 0x3a, 0x31, 0x63, 0x76, 0x64, 0x33, 0x6d, 0x70, 0x37, 0x6e, 0x32, 0x74, 0x72, 0x6c, 0x7a, 0x37, 0x37, 0x70, 0x75, 0x66, 0x79, 0x35, 0x39, 0x76, 0x7a, 0x6d, 0x6d, 0x34, 0x78, 0x72, 0x38, 0x70, 0x6c, 0x32, 0x6a, 0x72, 0x6e, 0x37, 0x6b, 0x32},
+			false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			res, err := sacco.Bech32Address(tt.data, tt.hrp)
+
+			if tt.wantErr {
+				require.Error(t, err)
+				require.Empty(t, res)
+				return
+			}
+
+			require.NoError(t, err)
+			require.Equal(t, tt.want, res)
+		})
+	}
+}
