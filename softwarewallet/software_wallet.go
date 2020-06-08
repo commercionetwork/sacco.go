@@ -18,6 +18,7 @@ type SoftwareWallet struct {
 	address   string
 }
 
+// DeriveOptions holds data that will be used by the Derive function to later derive a keypair and a wallet.
 type DeriveOptions struct {
 	Path     string
 	HRP      string
@@ -71,6 +72,7 @@ func generateMnemonic() (string, error) {
 	return mnemonic, err
 }
 
+// PublicKey implements the CryptoProvider interface.
 func (sw SoftwareWallet) PublicKey() ([]byte, error) {
 	pkec, err := sw.publicKey.ECPubKey()
 	if err != nil {
@@ -80,11 +82,12 @@ func (sw SoftwareWallet) PublicKey() ([]byte, error) {
 	return pkec.SerializeCompressed(), nil
 }
 
+// PublicKey implements the CryptoProvider interface.
 func (sw SoftwareWallet) Address() ([]byte, error) {
 	return []byte(sw.address), nil
 }
 
-// SignBlob implements CryptoProvider interface on SoftwareWallet.
+// SignBlob implements CryptoProvider interface.
 func (sw SoftwareWallet) SignBlob(b []byte) (sacco.ProviderSignature, error) {
 	pk, err := sw.keyPair.ECPrivKey()
 	if err != nil {
@@ -101,7 +104,7 @@ func (sw SoftwareWallet) SignBlob(b []byte) (sacco.ProviderSignature, error) {
 	}, nil
 }
 
-// Bech32PublicKey implements CryptoProvider interface on SoftwareWallet.
+// Bech32PublicKey implements CryptoProvider interface.
 func (sw SoftwareWallet) Bech32PublicKey() (string, error) {
 	pk, err := sw.PublicKey()
 	if err != nil {
