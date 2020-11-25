@@ -57,8 +57,8 @@ func (w Wallet) SignAndBroadcast(tx TransactionPayload, lcdEndpoint string, txMo
 		SignData{
 			tx,
 			nodeInfo.Info.Network,
-			strconv.FormatInt(accountData.Result.Value.AccountNumber, 10),
-			strconv.FormatInt(accountData.Result.Value.Sequence, 10),
+			accountData.Result.Value.AccountNumber,
+			accountData.Result.Value.Sequence,
 		},
 	)
 	if err != nil {

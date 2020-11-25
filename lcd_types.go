@@ -27,8 +27,8 @@ type AccountDataResult struct {
 // REST endpoint.
 type AccountDataValue struct {
 	Address       string `json:"address"`
-	AccountNumber int64  `json:"account_number"`
-	Sequence      int64  `json:"sequence"`
+	AccountNumber string `json:"account_number"`
+	Sequence      string `json:"sequence"`
 }
 
 // NodeInfo is the LCD REST response to a /node_info request,
