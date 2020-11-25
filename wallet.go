@@ -4,7 +4,6 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
-	"strconv"
 )
 
 // Wallet is a facility used to manipulate private and public keys, send transaction to LCD nodes.
