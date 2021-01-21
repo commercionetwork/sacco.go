@@ -21,13 +21,13 @@ func Test_getAccountData(t *testing.T) {
 		{
 			"successful request on a live account",
 			"did:com:1sfjela2snk9rmmcfh773gm50476w0ur5pmwuak",
-			`{"height":"1590","result":{"type":"cosmos-sdk/Account","value":{"address":"did:com:1sfjela2snk9rmmcfh773gm50476w0ur5pmwuak","coins":[{"denom":"ucommercio","amount":"10"}],"public_key":null,"account_number":11,"sequence":0}}}`,
+			`{"height":"1590","result":{"type":"cosmos-sdk/Account","value":{"address":"did:com:1sfjela2snk9rmmcfh773gm50476w0ur5pmwuak","coins":[{"denom":"ucommercio","amount":"10"}],"public_key":null,"account_number":"11","sequence":"0"}}}`,
 			http.StatusOK,
 			AccountData{
 				AccountDataResult{
 					AccountDataValue{
-						Sequence:      0,
-						AccountNumber: 11,
+						Sequence:      "0",
+						AccountNumber: "11",
 						Address:       "did:com:1sfjela2snk9rmmcfh773gm50476w0ur5pmwuak",
 					},
 				},
@@ -42,8 +42,8 @@ func Test_getAccountData(t *testing.T) {
 			AccountData{
 				AccountDataResult{
 					AccountDataValue{
-						Sequence:      0,
-						AccountNumber: 0,
+						Sequence:      "",
+						AccountNumber: "",
 						Address:       "",
 					},
 				},
